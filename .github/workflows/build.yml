@@ -6,6 +6,10 @@ on:
     tags: ["v*", "V*"]
   pull_request:
   workflow_dispatch:
+    inputs:
+      tag:
+        description: "Existing release tag to attach awinput-win.zip to (e.g. v1.0.1)"
+        required: false
 
 permissions:
   contents: write
@@ -41,7 +45,8 @@ jobs:
           path: awinput-win.zip
 
       - name: Release
-        if: startsWith(github.ref, 'refs/tags/v')
+        if: startsWith(github.ref, 'refs/tags/') || (github.event_name == 'workflow_dispatch' && inputs.tag != '')
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ inputs.tag || github.ref_name }}
           files: awinput-win.zip
