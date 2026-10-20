@@ -24,7 +24,7 @@ awinput list         # show monitors, current input, supported inputs
 **Or build it yourself** (Windows 10/11, no SDK needed):
 
 ```
-git clone https://github.com/<you>/awinput
+git clone https://github.com/StubbyDevs/awinput
 cd awinput
 build.bat
 ```
