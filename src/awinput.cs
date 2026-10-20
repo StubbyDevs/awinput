@@ -1,5 +1,5 @@
 // awinput - switch Dell / Alienware monitor inputs from the command line (DDC/CI VCP 0x60).
-// https://github.com/<you>/awinput  -  MIT License
+// https://github.com/StubbyDevs/awinput  -  MIT License
 //
 // Built as a windowless exe so Stream Deck / hotkey launchers don't flash a console.
 // When started from a terminal it attaches to that console for its output.
@@ -47,9 +47,11 @@ static class AwInput {
     // ---- output -------------------------------------------------------------------
     static bool hasConsole;
     static readonly string LogPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "awinput.log");
-    static void Out(string m) { if (hasConsole) Console.WriteLine(m); }
+    // Console writes can throw when the attached console has no usable handles
+    // (CI runners, some launchers); output must never take the tool down.
+    static void Out(string m) { if (hasConsole) try { Console.WriteLine(m); } catch { } }
     static void Err(string m) {
-        if (hasConsole) Console.Error.WriteLine("awinput: " + m);
+        if (hasConsole) try { Console.Error.WriteLine("awinput: " + m); } catch { }
         try { File.AppendAllText(LogPath, DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss ") + m + "\r\n"); } catch { }
     }
 
@@ -78,7 +80,7 @@ Errors are also written to awinput.log next to the exe (useful from Stream Deck)
         hasConsole = AttachConsole(-1);
         try { return Run(argv); }
         catch (Exception e) { Err("unexpected error: " + e.Message); return 10; }
-        finally { if (hasConsole) Console.WriteLine(); }
+        finally { Out(""); }
     }
 
     static int Run(string[] argv) {

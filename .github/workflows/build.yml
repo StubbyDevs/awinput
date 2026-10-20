@@ -3,8 +3,9 @@ name: build
 on:
   push:
     branches: [main]
-    tags: ["v*"]
+    tags: ["v*", "V*"]
   pull_request:
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -22,7 +23,9 @@ jobs:
       - name: Smoke test
         shell: pwsh
         run: |
-          $p = Start-Process bin\awinput.exe -ArgumentList '--version' -Wait -PassThru
+          if (-not (Test-Path bin\awinput.exe)) { throw "bin\awinput.exe was not built" }
+          $p = Start-Process bin\awinput.exe -ArgumentList '--version' -Wait -PassThru -NoNewWindow
+          Write-Host "awinput --version exit code: $($p.ExitCode)"
           if ($p.ExitCode -ne 0) { throw "awinput --version exited $($p.ExitCode)" }
 
       - name: Package
